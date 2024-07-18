@@ -1,0 +1,11 @@
+* text=auto
+# code
+*.py text eol=lf
+# documentation
+*.md text eol=lf
+# samples
+*.csv text eol=lf
+*.json text eol=lf
+*.sc text eol=lf
+*.sql text eol=lf
+*.tsv text eol=lf
