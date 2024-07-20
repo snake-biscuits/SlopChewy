@@ -1,4 +1,5 @@
 from __future__ import annotations
+import re
 from typing import Generator
 
 
@@ -31,10 +32,20 @@ class Column:
         assert isinstance(other, Column)
         return self.value < other.value
 
-    def __iadd__(self, other: int):
-        assert isinstance(other, int)
-        self.value += 1
+    def __add__(self, increment: int) -> Column:
+        assert isinstance(increment, int)
+        new_name = Column.name_of_value(self.value + increment)
+        return Column(new_name)
 
+    def __iadd__(self, increment: int) -> Column:
+        assert isinstance(increment, int)
+        self.value += increment
+
+    def is_valid(self):
+        return isinstance(self.value, int)
+
+    # NOTE: considering that we're unlikely to see 26+ char column names
+    # -- it'd be far more efficient to calculate char_for_value(value)
     @staticmethod
     def name_of_value(value: int) -> str:
         char_for_value = {
@@ -42,13 +53,16 @@ class Column:
             for i in range(ord("A"), ord("Z") + 1)}
         # ^ {0: "A", ..., 25: "Z"}
         out = list()
-        while value > 0:
+        while value >= 0:
             out.append(char_for_value[value % 26])
             value //= 26
-        return "".join(out)
+            # NOTE: "A" is 0; so "10" in base 26 would be "BA"
+            # -- however, "AA" comes after "Z"; "00" in base 26
+            value -= 1
+        return "".join(reversed(out))
 
     @staticmethod
-    def value_of_name(cls, name: str) -> int:
+    def value_of_name(name: str) -> int:
         assert name.isalpha()
         name = name.upper()
         value_for_char = {
@@ -56,7 +70,7 @@ class Column:
             for i in range(ord("A"), ord("Z") + 1)}
         # ^ {"A": 0, ..., "Z": 25}
         char_values = [value_for_char[c] for c in name]
-        return sum([c + (26 * i) for i, c in reversed(char_values)])
+        return sum([c + (26 * i) for i, c in enumerate(reversed(char_values))])
 
     @staticmethod
     def range(start: Column, stop: Column, step: int = 1) -> Generator[Column, None, None]:
@@ -74,9 +88,9 @@ class CellAddress:
     row: int
 
     def __init__(self, column: Column, row: int):
-        if isinstance(self.Column, str):
+        if isinstance(column, str):
             column = Column(column)
-        assert isinstance(self.row, int)
+        assert isinstance(row, int)
         self.column = column
         self.row = row
         assert self.is_valid()
@@ -120,15 +134,16 @@ class CellAddress:
 
     @classmethod
     def from_string(cls, address_string: str) -> CellAddress:
-        raise NotImplementedError()
         # TODO: use a globally cached regex
         # -- could probably automate verification & type conversion too
         # pattern = re.compile(r"([A-Z]+)([0-9]+)")
         # match = pattern.match(address_string)
-        # assert match is not None
-        # column, row = match.groups()
-        # row = int(row)
-        # return cls(column, row)
+        match = re.match(r"([A-Z]+)([0-9]+)", address_string)
+        assert match is not None, f"invalid address string: {address_string}"
+        column, row = match.groups()
+        column = Column(column)
+        row = int(row)
+        return cls(column, row)
 
 
 class CellRange:

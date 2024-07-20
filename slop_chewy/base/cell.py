@@ -19,7 +19,9 @@ class Cell:
         self.number = number
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} text="{self.text}" number={self.number} @ 0x{id(self):016X}>'
+        text = f'"{self.text}"' if self.text is not None else "N/A"
+        number = self.number if self.number is not None else "N/A"
+        return f'<{self.__class__.__name__} text={text} number={number} @ 0x{id(self):016X}>'
 
     def __hash__(self):
         return hash((self.text, self.number, self.alignment))

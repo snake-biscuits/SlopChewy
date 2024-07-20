@@ -17,13 +17,24 @@ class Sheet:
 
     def __init__(self):
         self.cells = collections.defaultdict(Cell)
-        self.cursor = CellAddress("A0")
+        self.cursor = CellAddress.from_string("A0")
+
+    def __repr__(self) -> str:
+        if self.top_left is not None:
+            bounds = f"{self.top_left!s}:{self.bottom_right!s}"
+        else:
+            bounds = "(empty)"
+        return f"<{self.__class__.__name__} {bounds} cursor={self.cursor!s} @ {id(self):016X}>"
 
     # TODO: isinstance(adddress, CellRange)
     def __getitem__(self, address: CellAddress) -> Cell:
         return self.cells[address]
 
     def __setitem__(self, address: CellAddress, cell: Cell):
+        if isinstance(address, str):
+            if ":" in address:  # CellRange
+                raise NotImplementedError()
+            address = CellAddress.from_string(address)
         if cell is None:  # clear cell
             raise NotImplementedError("Yet to decide on an implementation")
             # clear cell?
@@ -80,18 +91,20 @@ class Sheet:
 
     @property
     def top_left(self) -> CellAddress:
-        out = CellAddress("A0")
+        if len(self.cells) == 0:
+            return None
         columns = {address.column for address in self.cells}
-        out.column = sorted(columns)[0]
+        column = sorted(columns)[0]
         rows = {address.row for address in self.cells}
-        out.row = sorted(rows)[0]
-        return out
+        row = sorted(rows)[0]
+        return CellAddress(column, row)
 
     @property
     def bottom_right(self) -> CellAddress:
-        out = CellAddress("A0")
+        if len(self.cells) == 0:
+            return None
         columns = {address.column for address in self.cells}
-        out.column = sorted(columns)[-1]
+        column = sorted(columns)[-1]
         rows = {address.row for address in self.cells}
-        out.row = sorted(rows)[-1]
-        return out
+        row = sorted(rows)[-1]
+        return CellAddress(column, row)
