@@ -4,13 +4,17 @@ from typing import Generator
 
 class Column:
     """basically an int, but with string representation"""
-    self.value: int
+    value: int
+    name: str = property(lambda s: str(s))
 
     def __init__(self, name: str):
         self.value = Column.value_of_name(name)
 
     def __repr__(self) -> str:
         return f'Column("{self!s}")'
+
+    def __hash__(self):
+        return hash(self.value)
 
     def __str__(self) -> str:
         return Column.name_of_value(self.value)
@@ -79,6 +83,9 @@ class CellAddress:
 
     def __repr__(self) -> str:
         return f'CellAddress("{self.column!s}", {self.row})'
+
+    def __hash__(self):
+        return hash((self.column, self.row))
 
     def __str__(self) -> str:
         return f"{self.column!s}{self.row}"
