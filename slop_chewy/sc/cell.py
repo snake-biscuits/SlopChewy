@@ -30,7 +30,7 @@ class Cell(base.Cell):
 
     # NOTE: commands could be indentified by name, but regex can capture args & verify input
     # NOTE: _commands has to defined AFTER command methods
-    _commands: Dict[re.Pattern: Callable[[str], None]] = {
+    _commands: Dict[re.Pattern, Callable[[str], None]] = {
         r'leftstring [A-Z]+[0-9]+ = "(.*)"': leftstring}
     # leftstring A0 = "BspClass"
     # ^ {r"line regex pattern": Cell.method}

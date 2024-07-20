@@ -1,5 +1,5 @@
-from ... import base
-from ...sc import SC
+from .. import base
+from ..sc import SC
 
 
 def to_sc(jss: base.Binder) -> SC:
