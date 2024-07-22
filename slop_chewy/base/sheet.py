@@ -1,9 +1,10 @@
 from __future__ import annotations
 import collections
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from .address import CellAddress, CellRange
 from .cell import Cell
+from .formula import Formula
 
 
 class Sheet:
@@ -51,7 +52,7 @@ class Sheet:
     def __delitem__(self, address: CellAddress):
         self.cells.pop(address)
 
-    # TODO: more methods
+    # APPEND / EXTEND
     def append_cell(self, cell: Cell):
         self.cells[self.cursor] = Cell
         self.cursor.column += 1
@@ -67,17 +68,28 @@ class Sheet:
         for row in rows:
             self.append_row(row)
 
-    # TODO: work on parsing formulae before revisiting this
-    # -- need a way to pull a cell range
-    # -- but how is it iterated over?
-    # --- CellBlock class w/ __iter__ method? (should order matter?)
-    # def range(self, selection: CellRange) -> Dict[CellAddress, Cell]:
-    #     out = collections.defaultdict()
-    #     # copy only cells with data
-    #     for address in selection:
-    #         if address in self.cells:
-    #             out[address] = self.cells[address]
-    #     return out
+    # UTILITIES
+    def calculate(self, formula: Formula) -> float:
+        return formula.calculate(sheet=self)
+
+    def raw_data(self, selection: CellRange = None) -> List[List[Union[str, int, None]]]:
+        if selection is None:
+            selection = CellRange(self.top_left, self.bottom_right)
+        out = list()
+        for row in selection:
+            out.append(list())
+            for address in row:
+                cell = self.cells.get(address, None)
+                if cell is None or cell.is_empty:
+                    cell_value = None
+                elif cell.is_text_only:
+                    cell_value = cell.text
+                elif cell.has_formula:
+                    cell_value = self.calculate(cell.formula)
+                else:  # is_number_only
+                    cell_value = cell.number
+                out[-1].append(cell_value)
+        return out
 
     def sort(self, selection: CellRange, sort_function):
         raise NotImplementedError()
@@ -89,6 +101,7 @@ class Sheet:
         # delete selection from self.cells
         # re-write selection in new order
 
+    # PROPERTIES
     @property
     def top_left(self) -> CellAddress:
         if len(self.cells) == 0:

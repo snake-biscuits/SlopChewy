@@ -1,6 +1,6 @@
 from __future__ import annotations
 import re
-from typing import Generator
+from typing import Generator, List
 
 
 class Column:
@@ -155,10 +155,10 @@ class CellRange:
         self.bottom_right = bottom_right
         assert self.is_valid()
 
-    def __iter__(self):
-        return iter([
+    def __iter__(self) -> List[List[CellAddress]]:
+        return iter([[
             CellAddress(column, row)
-            for column in Column.range(self.top_left.column, self.bottom_right.column)
+            for column in Column.range(self.top_left.column, self.bottom_right.column)]
             for row in range(self.top_left.row, self.bottom_right.row)])
 
     def is_valid(self) -> bool:
