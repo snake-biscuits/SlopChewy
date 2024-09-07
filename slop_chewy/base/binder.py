@@ -7,19 +7,20 @@ from .sheet import Sheet
 
 class Binder:  # base class
     """A collection of Sheets"""
-    sheet: Dict[str, Sheet]
+    sheets: Dict[str, Sheet]
 
     def __init__(self):
-        self.sheet = collections.defaultdict(Sheet)
+        self.sheets = collections.defaultdict(Sheet)
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} with {len(self.sheet)} sheets @ 0x{id(self):016X}>"
+        descriptor = f"{len(self.sheets)} sheets"
+        return f"<{self.__class__.__name__} {descriptor} @ 0x{id(self):016X}>"
 
     def __getitem__(self, sheet_name: str) -> Sheet:
-        return self.sheet[sheet_name]
+        return self.sheets[sheet_name]
 
     def __setitem__(self, sheet_name: str, sheet: Sheet):
-        self.sheet[sheet_name] = sheet
+        self.sheets[sheet_name] = sheet
 
     def calculate(self, formula: Formula, sheet: Union[Sheet, str] = None) -> float:
         return formula.calculate(sheet=sheet, binder=self)
