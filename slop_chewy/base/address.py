@@ -44,33 +44,32 @@ class Column:
     def is_valid(self):
         return isinstance(self.value, int)
 
-    # NOTE: considering that we're unlikely to see 26+ char column names
-    # -- it'd be far more efficient to calculate char_for_value(value)
     @staticmethod
     def name_of_value(value: int) -> str:
-        char_for_value = {
-            i - ord("A"): chr(i)
-            for i in range(ord("A"), ord("Z") + 1)}
-        # ^ {0: "A", ..., 25: "Z"}
-        out = list()
-        while value >= 0:
-            out.append(char_for_value[value % 26])
-            value //= 26
-            # NOTE: "A" is 0; so "10" in base 26 would be "BA"
-            # -- however, "AA" comes after "Z"; "00" in base 26
-            value -= 1
-        return "".join(reversed(out))
+        digits = list()
+        while True:
+            high, low = value // 26, value % 26
+            digits.append(low)
+            if high > 26:  # next digit
+                value = high - 1
+            elif high == 0:  # no next digit
+                break
+            else:  # last digit
+                digits.append(high - 1)
+                break
+        return "".join(chr(ord("A") + v) for v in reversed(digits))
 
     @staticmethod
     def value_of_name(name: str) -> int:
         assert name.isalpha()
         name = name.upper()
-        value_for_char = {
-            chr(i): i - ord("A")
-            for i in range(ord("A"), ord("Z") + 1)}
-        # ^ {"A": 0, ..., "Z": 25}
-        char_values = [value_for_char[c] for c in name]
-        return sum([c + (26 * i) for i, c in enumerate(reversed(char_values))])
+        digits = [
+            ord(c) - ord("A")
+            for c in reversed(name)]
+        digits[1:] = [d + 1 for d in digits[1:]]
+        # if len(digits) > 1:
+        #     digits[-1] += 1  # 00 -> 10 (base26)
+        return sum(v * (26 ** i) for i, v in enumerate(digits))
 
     @staticmethod
     def range(start: Column, stop: Column, step: int = 1) -> Generator[Column, None, None]:
