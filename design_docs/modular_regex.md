@@ -10,7 +10,7 @@ It'd be nice to have some abstract base class for parsing the complex patterns
 ## Previous Design
 
 I came up with an idea for tackling this when I made `bsp_tool.extensions.editor`
-However, that appoach has a lot of ugly subclass systems & wierd wrappers
+However, that approach has a lot of ugly subclass systems & wierd wrappers
 
 A class-based appoach is nice for bundling methods
  * `str -> object`
