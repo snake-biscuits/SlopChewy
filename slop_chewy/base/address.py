@@ -37,9 +37,10 @@ class Column:
         new_name = Column.name_of_value(self.value + increment)
         return Column(new_name)
 
-    def __iadd__(self, increment: int) -> Column:
+    def __sub__(self, increment: int) -> Column:
         assert isinstance(increment, int)
-        self.value += increment
+        new_name = Column.name_of_value(self.value - increment)
+        return Column(new_name)
 
     def is_valid(self):
         return isinstance(self.value, int)
@@ -73,6 +74,7 @@ class Column:
 
     @staticmethod
     def range(start: Column, stop: Column, step: int = 1) -> Generator[Column, None, None]:
+        # TODO: catch string with colons (e.g. "A:B:")
         if isinstance(start, str):
             start = Column(start)
         if isinstance(stop, str):
